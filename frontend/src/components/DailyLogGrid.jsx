@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 const STATUS = [
   { label: 'Off Duty', color: 'bg-gray-200' },
@@ -10,13 +10,11 @@ const STATUS = [
 const HOURS = 24;
 const BLOCKS_PER_HOUR = 4;
 const TOTAL_BLOCKS = HOURS * BLOCKS_PER_HOUR;
-
 const BLOCK_HEIGHTS = ['h-5', 'h-3', 'h-2.5', 'h-3'];
 
-export default function DailyLogGrid() {
-  const [blocks, setBlocks] = useState(Array(TOTAL_BLOCKS).fill(0));
-  const [dragging, setDragging] = useState(false);
-  const [dragStart, setDragStart] = useState(null);
+export default function DailyLogGrid({ blocks, setBlocks }) {
+  const [dragging, setDragging] = React.useState(false);
+  const [dragStart, setDragStart] = React.useState(null);
   const lastClicked = useRef(null);
 
   const handleMouseDown = (blockIdx, rowIdx) => {
