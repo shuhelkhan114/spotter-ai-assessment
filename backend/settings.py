@@ -1,4 +1,8 @@
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -80,3 +84,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# Mapbox token (set in .env file)
+MAPBOX_TOKEN = os.getenv('MAPBOX_TOKEN')

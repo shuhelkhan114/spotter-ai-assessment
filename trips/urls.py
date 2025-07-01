@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from .views import TripRouteView, TripLogsView
 
 urlpatterns = [
-    path('', views.trip_test),
+    path('route/', TripRouteView.as_view()),
+    path('logs/', TripLogsView.as_view()),
 ]
