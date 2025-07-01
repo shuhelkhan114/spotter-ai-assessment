@@ -3,6 +3,8 @@ import MapView from './MapView';
 import DailyLogGrid from './DailyLogGrid';
 import LocationSearchInput from './LocationSearchInput';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 const initialForm = {
   current_location: '',
   pickup_location: '',
@@ -32,7 +34,7 @@ export default function TripInputPage() {
     setRouteData(null);
     setLogData(null);
     try {
-      const routeRes = await fetch('/api/trip/route/', {
+      const routeRes = await fetch(`${API_BASE}/api/trip/route/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -41,7 +43,7 @@ export default function TripInputPage() {
       const routeJson = await routeRes.json();
       setRouteData(routeJson);
 
-      const logsRes = await fetch('/api/trip/logs/', {
+      const logsRes = await fetch(`${API_BASE}/api/trip/logs/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
