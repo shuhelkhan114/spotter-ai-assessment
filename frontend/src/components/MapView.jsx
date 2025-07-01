@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 // TODO: Replace with your own Mapbox access token
 mapboxgl.accessToken = 'pk.eyJ1Ijoic2h1aGVsLWtoYW4iLCJhIjoiY21jazcwZjUzMGQ2azJtc2s5bWpsNXZjNSJ9.c2UyzVHEMMoyP34UYSYp0w';
@@ -70,7 +71,12 @@ export default function MapView({ polyline, stops }) {
       });
     });
 
-    return () => mapRef.current && mapRef.current.remove();
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
   }, [polyline, stops]);
 
   return (
