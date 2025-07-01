@@ -1,10 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 
 const STATUS = [
-  { label: 'Off Duty', color: 'bg-gray-200' },
-  { label: 'Sleeper Berth', color: 'bg-cyan-200' },
-  { label: 'Driving', color: 'bg-yellow-200' },
-  { label: 'On Duty', color: 'bg-orange-200' },
+  { label: 'Off Duty', color: 'bg-gray-200', key: 'off' },
+  { label: 'Sleeper Berth', color: 'bg-cyan-200', key: 'sleeper' },
+  { label: 'Driving', color: 'bg-yellow-200', key: 'driving' },
+  { label: 'On Duty', color: 'bg-orange-200', key: 'on' },
 ];
 
 const HOURS = 24;
@@ -12,43 +12,51 @@ const BLOCKS_PER_HOUR = 4;
 const TOTAL_BLOCKS = HOURS * BLOCKS_PER_HOUR;
 const BLOCK_HEIGHTS = ['h-5', 'h-3', 'h-2.5', 'h-3'];
 
-function formatMinutes(mins) {
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  return `${h}h ${m}m`;
+function formatHours(h) {
+  return h % 1 === 0 ? `${h}h` : `${Math.floor(h)}h ${(h % 1) * 60}m`;
 }
 
-export default function DailyLogGrid({ blocks, setBlocks }) {
+export default function DailyLogGrid({ blocks, setBlocks, totals }) {
   const [dragging, setDragging] = React.useState(false);
   const [dragStart, setDragStart] = React.useState(null);
   const lastClicked = useRef(null);
 
-  // Calculate totals for each status
-  const totals = [0, 0, 0, 0];
-  blocks.forEach((status) => {
-    if (status >= 0 && status < 4) totals[status] += 15;
-  });
-  const totalMins = totals.reduce((a, b) => a + b, 0);
+  // Calculate totals for each status if not provided
+  const computedTotals = [0, 0, 0, 0];
+  if (blocks) {
+    blocks.forEach((status) => {
+      if (status >= 0 && status < 4) computedTotals[status] += 15;
+    });
+  }
+  // Convert to hours
+  const computedTotalsHours = computedTotals.map((mins) => +(mins / 60).toFixed(2));
 
-  const handleMouseDown = (blockIdx, rowIdx) => {
+  useEffect(() => {
+    if (dragging) {
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => window.removeEventListener('mouseup', handleMouseUp);
+    }
+  }, [dragging]);
+
+  function handleMouseDown(blockIdx, rowIdx) {
+    if (!setBlocks) return;
     setDragging(true);
     setDragStart({ idx: blockIdx, row: rowIdx });
     updateBlocks(blockIdx, blockIdx, rowIdx);
     lastClicked.current = { idx: blockIdx, row: rowIdx };
-  };
-
-  const handleMouseEnter = (blockIdx, rowIdx) => {
+  }
+  function handleMouseEnter(blockIdx, rowIdx) {
+    if (!setBlocks) return;
     if (dragging && dragStart) {
       updateBlocks(dragStart.idx, blockIdx, dragStart.row);
     }
-  };
-
-  const handleMouseUp = () => {
+  }
+  function handleMouseUp() {
     setDragging(false);
     setDragStart(null);
-  };
-
-  const handleBlockClick = (blockIdx, rowIdx, e) => {
+  }
+  function handleBlockClick(blockIdx, rowIdx, e) {
+    if (!setBlocks) return;
     if (e.shiftKey && lastClicked.current) {
       if (lastClicked.current.row === rowIdx) {
         updateBlocks(lastClicked.current.idx, blockIdx, rowIdx);
@@ -57,9 +65,9 @@ export default function DailyLogGrid({ blocks, setBlocks }) {
       updateBlocks(blockIdx, blockIdx, rowIdx);
       lastClicked.current = { idx: blockIdx, row: rowIdx };
     }
-  };
-
-  const updateBlocks = (start, end, rowIdx) => {
+  }
+  function updateBlocks(start, end, rowIdx) {
+    if (!setBlocks) return;
     const [from, to] = [start, end].sort((a, b) => a - b);
     setBlocks((prev) => {
       const newBlocks = [...prev];
@@ -68,14 +76,7 @@ export default function DailyLogGrid({ blocks, setBlocks }) {
       }
       return newBlocks;
     });
-  };
-
-  useEffect(() => {
-    if (dragging) {
-      window.addEventListener('mouseup', handleMouseUp);
-      return () => window.removeEventListener('mouseup', handleMouseUp);
-    }
-  }, [dragging]);
+  }
 
   return (
     <div className="p-4 max-w-full select-none">
@@ -112,13 +113,13 @@ export default function DailyLogGrid({ blocks, setBlocks }) {
                 </div>
               ))}
             </div>
-            <span className="w-20 text-xs text-blue-700 pl-2">{formatMinutes(totals[rowIdx])}</span>
+            <span className="w-20 text-xs text-blue-700 pl-2">
+              {totals && typeof totals[status.key] !== 'undefined'
+                ? formatHours(totals[status.key])
+                : formatHours(computedTotalsHours[rowIdx])}
+            </span>
           </div>
         ))}
-        <div className="flex items-center justify-end mt-2">
-          <span className="font-medium text-sm mr-2">Total</span>
-          <span className="text-green-700 text-xs">{formatMinutes(totalMins)}</span>
-        </div>
       </div>
       <div className="mt-4 text-xs text-gray-500">
         <b>Tip:</b> Just drag, click, or shift+click in any row to fill time for that status.<br />

@@ -108,7 +108,12 @@ export default function TripInputPage() {
       {logData && logData.days && logData.days.length > 0 && (
         <div className="mb-6">
           <h2 className="font-semibold mb-2">Daily Log Sheet</h2>
-          <DailyLogGrid blocks={logData.days[0].blocks} setBlocks={() => {}} />
+          {logData.days.map((day, idx) => (
+            <div key={day.date} className="mb-4">
+              <div className="text-xs text-gray-500 mb-1">{day.date}</div>
+              <DailyLogGrid blocks={day.blocks} setBlocks={() => {}} totals={day.totals} />
+            </div>
+          ))}
         </div>
       )}
     </div>

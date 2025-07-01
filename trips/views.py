@@ -51,6 +51,64 @@ def calculate_stops(distance_miles, polyline):
         stops.append({'type': 'fuel', 'coords': polyline[idx]})
     return stops
 
+def generate_log_blocks(distance_miles, eta_hours, stops, start_hour=6):
+    # 0=Off Duty, 1=Sleeper Berth, 2=Driving, 3=On Duty (not driving)
+    # Each block = 15 min, 96 blocks per day
+    blocks_per_day = 96
+    blocks = []
+    blocks_needed = int(eta_hours * 4)  # 4 blocks per hour
+    current_block = int(start_hour * 4)  # Start at 6:00 AM by default
+    day = 0
+    days = []
+    # Simulate: pre-trip (on duty), driving, breaks, post-trip (on duty), off duty/sleeper
+    while blocks_needed > 0:
+        day_blocks = [0] * blocks_per_day
+        # Pre-trip inspection (on duty, 15 min)
+        if current_block < blocks_per_day:
+            day_blocks[current_block] = 3
+            current_block += 1
+        # Driving and breaks
+        driving_blocks = 0
+        while driving_blocks < blocks_per_day - current_block and blocks_needed > 0:
+            # Drive up to 32 blocks (8 hours) then break (2 blocks = 30 min off duty)
+            drive_this_leg = min(32, blocks_needed, blocks_per_day - current_block)
+            for _ in range(drive_this_leg):
+                day_blocks[current_block] = 2
+                current_block += 1
+                driving_blocks += 1
+                blocks_needed -= 1
+                if current_block >= blocks_per_day:
+                    break
+            # Insert break if more driving remains
+            if blocks_needed > 0 and current_block < blocks_per_day:
+                for _ in range(2):  # 30 min break
+                    if current_block < blocks_per_day:
+                        day_blocks[current_block] = 0
+                        current_block += 1
+                        driving_blocks += 1
+        # Post-trip inspection (on duty, 15 min)
+        if current_block < blocks_per_day:
+            day_blocks[current_block] = 3
+            current_block += 1
+        # Fill rest of day with off duty or sleeper
+        for i in range(current_block, blocks_per_day):
+            day_blocks[i] = 1 if day % 2 == 0 else 0  # Alternate sleeper/off for demo
+        # Calculate totals
+        totals = {
+            "off": day_blocks.count(0) / 4,
+            "sleeper": day_blocks.count(1) / 4,
+            "driving": day_blocks.count(2) / 4,
+            "on": day_blocks.count(3) / 4,
+        }
+        days.append({
+            "date": (datetime.date.today() + datetime.timedelta(days=day)).isoformat(),
+            "blocks": day_blocks,
+            "totals": totals,
+        })
+        day += 1
+        current_block = 0
+    return days
+
 class TripRouteView(APIView):
     def post(self, request):
         data = request.data
@@ -78,13 +136,19 @@ class TripRouteView(APIView):
 
 class TripLogsView(APIView):
     def post(self, request):
-        today = datetime.date.today().isoformat()
-        return Response({
-            "days": [
-                {
-                    "date": today,
-                    "blocks": [0]*32 + [2]*32 + [1]*32,
-                    "totals": {"off": 8, "driving": 8, "sleeper": 8, "on": 0}
-                }
-            ]
-        })
+        data = request.data
+        try:
+            pickup = data.get('pickup_location')
+            dropoff = data.get('dropoff_location')
+            if not pickup or not dropoff:
+                return Response({'error': 'pickup_location and dropoff_location required'}, status=400)
+            # Geocode and get route as in TripRouteView
+            pickup_coords = geocode(pickup)
+            dropoff_coords = geocode(dropoff)
+            polyline, distance_miles, eta_hours = get_route(pickup_coords, dropoff_coords)
+            stops = calculate_stops(distance_miles, polyline)
+            # Generate log blocks
+            days = generate_log_blocks(distance_miles, eta_hours, stops)
+            return Response({"days": days})
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
