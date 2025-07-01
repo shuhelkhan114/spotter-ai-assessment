@@ -12,10 +12,23 @@ const BLOCKS_PER_HOUR = 4;
 const TOTAL_BLOCKS = HOURS * BLOCKS_PER_HOUR;
 const BLOCK_HEIGHTS = ['h-5', 'h-3', 'h-2.5', 'h-3'];
 
+function formatMinutes(mins) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${h}h ${m}m`;
+}
+
 export default function DailyLogGrid({ blocks, setBlocks }) {
   const [dragging, setDragging] = React.useState(false);
   const [dragStart, setDragStart] = React.useState(null);
   const lastClicked = useRef(null);
+
+  // Calculate totals for each status
+  const totals = [0, 0, 0, 0];
+  blocks.forEach((status) => {
+    if (status >= 0 && status < 4) totals[status] += 15;
+  });
+  const totalMins = totals.reduce((a, b) => a + b, 0);
 
   const handleMouseDown = (blockIdx, rowIdx) => {
     setDragging(true);
@@ -99,8 +112,13 @@ export default function DailyLogGrid({ blocks, setBlocks }) {
                 </div>
               ))}
             </div>
+            <span className="w-20 text-xs text-blue-700 pl-2">{formatMinutes(totals[rowIdx])}</span>
           </div>
         ))}
+        <div className="flex items-center justify-end mt-2">
+          <span className="font-medium text-sm mr-2">Total</span>
+          <span className="text-green-700 text-xs">{formatMinutes(totalMins)}</span>
+        </div>
       </div>
       <div className="mt-4 text-xs text-gray-500">
         <b>Tip:</b> Just drag, click, or shift+click in any row to fill time for that status.<br />

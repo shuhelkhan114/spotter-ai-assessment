@@ -22,18 +22,17 @@ export default function SummaryPanel({ blocks }) {
   const totalMins = totals.reduce((a, b) => a + b, 0);
 
   return (
-    <div className="bg-white rounded shadow p-4 mb-4">
-      <div className="font-semibold mb-2 text-sm">Summary (Totals)</div>
-      <div className="flex flex-wrap gap-4 text-xs">
+    <div className="mb-4">
+      <div className="flex flex-col gap-1">
         {STATUS.map((label, idx) => (
-          <div key={label} className="flex flex-col items-center">
-            <span className="font-medium">{label}</span>
-            <span className="text-blue-700">{formatMinutes(totals[idx])}</span>
+          <div key={label} className="flex items-center justify-between">
+            <span className="w-28 text-sm font-medium pr-2 whitespace-nowrap">{label}</span>
+            <span className="text-blue-700 text-xs">{formatMinutes(totals[idx])}</span>
           </div>
         ))}
-        <div className="flex flex-col items-center">
-          <span className="font-medium">Total</span>
-          <span className="text-green-700">{formatMinutes(totalMins)}</span>
+        <div className="flex items-center justify-end mt-2">
+          <span className="font-medium text-sm mr-2">Total</span>
+          <span className="text-green-700 text-xs">{formatMinutes(totalMins)}</span>
         </div>
       </div>
     </div>
