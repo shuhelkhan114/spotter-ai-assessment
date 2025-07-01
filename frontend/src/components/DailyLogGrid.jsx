@@ -121,10 +121,17 @@ export default function DailyLogGrid({ blocks, setBlocks, totals }) {
           </div>
         ))}
       </div>
-      <div className="mt-4 text-xs text-gray-500">
-        <b>Tip:</b> Just drag, click, or shift+click in any row to fill time for that status.<br />
-        Each row is a status, each hour contains 4 blocks (15-min each, 24 hours total).<br />
-        0 min blocks are tallest; 15, 30, 45 min blocks are shorter for easier reading.
+      {/* Summary row for totals */}
+      <div className="flex items-center justify-end mt-2 bg-gray-50 rounded px-2 py-1">
+        <span className="text-xs font-medium mr-4">Totals:</span>
+        {STATUS.map((status, idx) => (
+          <span key={status.key} className="w-24 text-xs text-blue-700 text-center">
+            {totals && typeof totals[status.key] !== 'undefined'
+              ? formatHours(totals[status.key])
+              : formatHours(computedTotalsHours[idx])}
+            <span className="ml-1 text-gray-500">{status.label}</span>
+          </span>
+        ))}
       </div>
     </div>
   );
