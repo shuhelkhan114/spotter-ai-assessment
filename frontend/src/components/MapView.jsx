@@ -2,12 +2,12 @@ import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-// TODO: Replace with your own Mapbox access token
-mapboxgl.accessToken = 'pk.eyJ1Ijoic2h1aGVsLWtoYW4iLCJhIjoiY21jazcwZjUzMGQ2azJtc2s5bWpsNXZjNSJ9.c2UyzVHEMMoyP34UYSYp0w';
+
+mapboxgl.accessToken = process.env.VITE_MAPBOX_TOKEN;
 
 const DEFAULT_ROUTE = [
-  [-87.9065, 43.0389], // Milwaukee, WI
-  [-87.6278, 41.8818], // Chicago, IL
+  [-87.9065, 43.0389],
+  [-87.6278, 41.8818],
 ];
 const DEFAULT_STOPS = [
   { type: 'pickup', coords: [-87.9065, 43.0389] },
@@ -64,13 +64,10 @@ export default function MapView({ polyline, stops }) {
         paint: { 'line-color': '#3b82f6', 'line-width': 4 },
       });
 
-      // Fit map to route bounds
       if (route.length > 1) {
         const bounds = route.reduce((b, coord) => b.extend(coord), new mapboxgl.LngLatBounds(route[0], route[0]));
         mapRef.current.fitBounds(bounds, { padding: 60 });
       }
-
-      // Add markers for stops with emoji icons and popups
       stopsData.forEach((stop) => {
         const el = document.createElement('div');
         el.className = 'marker';

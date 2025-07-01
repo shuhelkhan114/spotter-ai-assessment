@@ -85,5 +85,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-# Mapbox token (set in .env file)
 MAPBOX_TOKEN = os.getenv('MAPBOX_TOKEN')

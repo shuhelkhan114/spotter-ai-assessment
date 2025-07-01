@@ -21,14 +21,12 @@ export default function DailyLogGrid({ blocks, setBlocks, totals }) {
   const [dragStart, setDragStart] = React.useState(null);
   const lastClicked = useRef(null);
 
-  // Calculate totals for each status if not provided
   const computedTotals = [0, 0, 0, 0];
   if (blocks) {
     blocks.forEach((status) => {
       if (status >= 0 && status < 4) computedTotals[status] += 15;
     });
   }
-  // Convert to hours
   const computedTotalsHours = computedTotals.map((mins) => +(mins / 60).toFixed(2));
 
   useEffect(() => {

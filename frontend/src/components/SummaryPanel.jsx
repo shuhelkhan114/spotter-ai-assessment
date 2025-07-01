@@ -14,7 +14,6 @@ function formatMinutes(mins) {
 }
 
 export default function SummaryPanel({ blocks }) {
-  // Calculate totals for each status
   const totals = [0, 0, 0, 0];
   blocks.forEach((status) => {
     if (status >= 0 && status < 4) totals[status] += 15;
