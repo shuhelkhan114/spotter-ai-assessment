@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 
-const MAPBOX_TOKEN = 'pk.eyJ1Ijoic2h1aGVsLWtoYW4iLCJhIjoiY21jazcwZjUzMGQ2azJtc2s5bWpsNXZjNSJ9.c2UyzVHEMMoyP34UYSYp0w';
+const MAPBOX_TOKEN = process.env.VITE_MAPBOX_TOKEN;
 
 export default function LocationSearchInput({ value, onChange, onSelect, label, placeholder, name }) {
   const [suggestions, setSuggestions] = useState([]);
